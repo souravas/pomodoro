@@ -17,22 +17,23 @@ from rich.progress import Progress, BarColumn, TextColumn, TimeRemainingColumn
 from Config import Config
 
 console = Console()
+_config = None
 
 
 async def main() -> None:
-    config = parse_arguments()
     console.print("[bold green]Started Pomodoro[/]")
-    await start_pomodoro(config)
+    await start_pomodoro()
     console.print("[bold green]Pomodoro Ended![/]")
 
 
-async def start_pomodoro(config: Config):
+async def start_pomodoro():
+    config = fetch_config()
     count = 0
     while True:
-        await countdown(config.pomodoro_duration, "Pomodoro", config)
+        await countdown(config.pomodoro_duration, "Pomodoro")
         count += 1
         console.print(f"[bold green]Pomodoro's Done : {count}[/]")
-        await start_break(config.break_duration, count, config)
+        await start_break(config.break_duration, count)
         try:
             config.pomodoro_duration = await fetch_user_input(
                 config.pomodoro_duration, "Pomodoro"
@@ -53,23 +54,23 @@ async def fetch_user_input(duration: int, name: str) -> int:
     return duration
 
 
-async def start_break(break_duration, count, config: Config):
-    if is_long_break(count, config):
+async def start_break(break_duration, count):
+    config = fetch_config()
+    if is_long_break(count):
         console.print("[bold green]Taking Long Break![/]")
         await countdown(
             config.long_break_duration,
             "Break",
-            config,
         )
     else:
         await countdown(
             break_duration,
             "Break",
-            config,
         )
 
 
-async def countdown(minutes: int, name: str, config: Config) -> None:
+async def countdown(minutes: int, name: str) -> None:
+    config = fetch_config()
     seconds = minutes * config.second_multiplier
     with Progress(
         TextColumn("[bold blue]{task.fields[name]}", justify="right"),
@@ -133,8 +134,16 @@ def ask(prompt: str, default: int) -> int:
     return int(raw)
 
 
-def is_long_break(count, config: Config):
+def is_long_break(count):
+    config = fetch_config()
     return count > 0 and count % config.long_break_pomodoro_count == 0
+
+
+def fetch_config() -> Config:
+    global _config
+    if _config is None:
+        _config = parse_arguments()
+    return _config
 
 
 if __name__ == "__main__":
