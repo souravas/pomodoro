@@ -10,21 +10,61 @@ Date: July 2025
 
 import argparse
 import asyncio
+import sys
 from typing import Tuple
 from rich.console import Console
 from rich.progress import Progress, BarColumn, TextColumn, TimeRemainingColumn
 
 console = Console()
 
+SECOND_MULTIPLIER = 60
+LONG_BREAK_DURATION = 15
+LONG_BREAK_POMODORO_COUNT = 4
+
 
 async def main() -> None:
     pomodoro_duration, break_duration = parse_arguments()
-    await countdown(pomodoro_duration, "Pomodoro")
-    await countdown(break_duration, "Break")
-    console.print("[bold green]All done![/]")
+    await start_pomodoro(pomodoro_duration, break_duration)
+    console.print("[bold green] All done![/]")
 
 
-async def countdown(seconds: int, name: str) -> None:
+async def start_pomodoro(pomodoro_duration, break_duration):
+    count = 0
+    while True:
+        await countdown(pomodoro_duration, "Pomodoro")
+        count += 1
+        if is_long_break(count):
+            console.print("[bold green] Taking Long Break[/]")
+            await countdown(
+                LONG_BREAK_DURATION,
+                "Break",
+            )
+        else:
+            await countdown(
+                break_duration,
+                "Break",
+            )
+
+        try:
+            p = ask(
+                " Enter next Pomodoro duration (blank to keep current, q to quit): ",
+                pomodoro_duration,
+            )
+            b = ask(
+                " Enter next Break duration (blank to keep current, q to quit): ",
+                break_duration,
+            )
+        except ValueError:
+            console.print("[red] Quitting Pomodoro...[/]")
+            break
+
+        pomodoro_duration = p
+        break_duration = b
+        console.print(f"[bold green] Pomodoro's Done : {count}[/]")
+
+
+async def countdown(minutes: int, name: str) -> None:
+    seconds = minutes * SECOND_MULTIPLIER
     with Progress(
         TextColumn("[bold blue]{task.fields[name]}", justify="right"),
         BarColumn(),
@@ -47,21 +87,32 @@ def parse_arguments() -> Tuple[int, int]:
     parser.add_argument(
         "-p",
         "--pomodoro_duration",
-        type=lambda m: int(m) * 60,
-        default=25 * 60,
+        type=lambda m: int(m),
+        default=25,
         metavar="MINUTES",
         help="Duration of work session in minutes (default: 25)",
     )
     parser.add_argument(
         "-b",
         "--break_duration",
-        type=lambda m: int(m) * 60,
-        default=5 * 60,
+        type=lambda m: int(m),
+        default=5,
         metavar="MINUTES",
         help="Duration of break session in minutes (default: 5)",
     )
     args = parser.parse_args()
     return args.pomodoro_duration, args.break_duration
+
+
+def ask(prompt: str, default: int) -> int:
+    raw = input(f"\r{prompt}") or str(default)
+    sys.stdout.write("\033[F\033[K")
+    sys.stdout.flush()
+    return int(raw)
+
+
+def is_long_break(count):
+    return count > 0 and count % LONG_BREAK_POMODORO_COUNT == 0
 
 
 if __name__ == "__main__":
