@@ -23,9 +23,8 @@ LONG_BREAK_POMODORO_COUNT = 4
 
 
 async def main() -> None:
-    pomodoro_duration, break_duration = parse_arguments()
-    await start_pomodoro(pomodoro_duration, break_duration)
-    console.print("[bold green] All done![/]")
+    await start_pomodoro(*parse_arguments())
+    console.print("[bold green]All done![/]")
 
 
 async def start_pomodoro(pomodoro_duration, break_duration):
@@ -33,34 +32,37 @@ async def start_pomodoro(pomodoro_duration, break_duration):
     while True:
         await countdown(pomodoro_duration, "Pomodoro")
         count += 1
-        if is_long_break(count):
-            console.print("[bold green] Taking Long Break[/]")
-            await countdown(
-                LONG_BREAK_DURATION,
-                "Break",
-            )
-        else:
-            await countdown(
-                break_duration,
-                "Break",
-            )
+        await start_break(break_duration, count)
 
         try:
-            p = ask(
-                " Enter next Pomodoro duration (blank to keep current, q to quit): ",
-                pomodoro_duration,
-            )
-            b = ask(
-                " Enter next Break duration (blank to keep current, q to quit): ",
-                break_duration,
-            )
+            pomodoro_duration = await fetch_user_input(pomodoro_duration, "Pomodoro")
+            break_duration = await fetch_user_input(break_duration, "Break")
         except ValueError:
-            console.print("[red] Quitting Pomodoro...[/]")
+            console.print("[red]Quitting Pomodoro...[/]")
             break
+        console.print(f"[bold green]Pomodoro's Done : {count}[/]")
 
-        pomodoro_duration = p
-        break_duration = b
-        console.print(f"[bold green] Pomodoro's Done : {count}[/]")
+
+async def fetch_user_input(duration: int, name: str) -> int:
+    duration = ask(
+        f"Enter next {name} duration (blank to keep current, q to quit): ",
+        duration,
+    )
+    return duration
+
+
+async def start_break(break_duration, count):
+    if is_long_break(count):
+        console.print("[bold green]Taking Long Break![/]")
+        await countdown(
+            LONG_BREAK_DURATION,
+            "Break",
+        )
+    else:
+        await countdown(
+            break_duration,
+            "Break",
+        )
 
 
 async def countdown(minutes: int, name: str) -> None:
