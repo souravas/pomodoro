@@ -116,8 +116,8 @@ def parse_arguments() -> Config:
     args = parser.parse_args()
     if args.test:
         return Config(
-            pomodoro_duration=args.pomodoro_duration,
-            break_duration=args.break_duration,
+            pomodoro_duration=2,
+            break_duration=2,
             second_multiplier=3,
             long_break_duration=3,
         )
