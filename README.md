@@ -1,4 +1,4 @@
-# Simple Pomodoro Timer
+# Pomodoro Timer
 
 A beautiful command-line Pomodoro timer built with Python and Rich library. This timer helps you implement the Pomodoro Technique for improved productivity and focus.
 
@@ -21,7 +21,7 @@ A beautiful command-line Pomodoro timer built with Python and Rich library. This
 1. Clone this repository:
 ```bash
 git clone <repository-url>
-cd simple-pomodoro
+cd pomodoro
 ```
 
 2. Install dependencies using uv (recommended):
@@ -98,7 +98,7 @@ This project uses:
 ### Project Structure
 
 ```
-simple-pomodoro/
+pomodoro/
 ├── main.py           # Main application code
 ├── pyproject.toml    # Project configuration and dependencies
 ├── uv.lock          # Locked dependency versions

@@ -1,5 +1,5 @@
 """
-Simple Pomodoro Timer
+Pomodoro Timer
 
 A command-line Pomodoro timer application built with Python and Rich library.
 Implements the Pomodoro Technique for improved productivity and focus.
