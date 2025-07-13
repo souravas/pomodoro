@@ -1,16 +1,18 @@
 import argparse
 import time
+import sys
 
 def main():
     pomodoro_duration, break_duration = parse_arguments()
-    countdown(pomodoro_duration)
-    countdown(break_duration)
+    countdown(pomodoro_duration, 'Pomodoro')
+    countdown(break_duration, 'Break')
 
-def countdown(seconds):
+def countdown(seconds, name):
     for remaining in range(seconds, 0, -1):
-        print(f"\rTime remaining: {remaining:2d} seconds", end="")
+        print(f"\r{name} Time remaining: {remaining} seconds", end="", flush=True)
         time.sleep(1)
-    print("End of time")
+    sys.stdout.write("\r\033[K")  # \r = go to start, \033[K = clear to end of line
+    sys.stdout.flush()
 
 def to_seconds(minutes):
     return minutes * 60
