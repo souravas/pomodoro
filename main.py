@@ -23,8 +23,9 @@ LONG_BREAK_POMODORO_COUNT = 4
 
 
 async def main() -> None:
+    console.print("[bold green]Started Pomodoro[/]")
     await start_pomodoro(*parse_arguments())
-    console.print("[bold green]All done![/]")
+    console.print("[bold green]Pomodoro Ended![/]")
 
 
 async def start_pomodoro(pomodoro_duration, break_duration):
@@ -32,15 +33,14 @@ async def start_pomodoro(pomodoro_duration, break_duration):
     while True:
         await countdown(pomodoro_duration, "Pomodoro")
         count += 1
+        console.print(f"[bold green]Pomodoro's Done : {count}[/]")
         await start_break(break_duration, count)
-
         try:
             pomodoro_duration = await fetch_user_input(pomodoro_duration, "Pomodoro")
             break_duration = await fetch_user_input(break_duration, "Break")
         except ValueError:
             console.print("[red]Quitting Pomodoro...[/]")
             break
-        console.print(f"[bold green]Pomodoro's Done : {count}[/]")
 
 
 async def fetch_user_input(duration: int, name: str) -> int:
@@ -102,8 +102,24 @@ def parse_arguments() -> Tuple[int, int]:
         metavar="MINUTES",
         help="Duration of break session in minutes (default: 5)",
     )
+    parser.add_argument(
+        "-t",
+        "--test",
+        action="store_true",
+        help="Enable test mode (use short 1-minute sessions)",
+    )
     args = parser.parse_args()
+    if args.test:
+        update_test_values()
     return args.pomodoro_duration, args.break_duration
+
+
+def update_test_values():
+    global SECOND_MULTIPLIER
+    global LONG_BREAK_DURATION
+
+    SECOND_MULTIPLIER = 3
+    LONG_BREAK_DURATION = 3
 
 
 def ask(prompt: str, default: int) -> int:
