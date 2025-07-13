@@ -1,22 +1,21 @@
 import argparse
 import sys
 import asyncio
+from rich.progress import track
 
 async def main():
     pomodoro_duration, break_duration = parse_arguments()
     await countdown(pomodoro_duration, 'Pomodoro')
     await countdown(break_duration, 'Break')
-    print("You did it!")
 
 async def countdown(seconds, name):
-    for remaining in range(seconds, 0, -1):
-        print(f"\r{name} Time remaining: {remaining} seconds", end="", flush=True)
+    for _ in track(range(seconds), description=f"[bold blue]{name}"):
         await asyncio.sleep(1)
     sys.stdout.write("\r\033[K")  # \r = go to start, \033[K = clear to end of line
     sys.stdout.flush()
 
 def to_seconds(minutes):
-    return minutes * 3
+    return minutes * 60
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
