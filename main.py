@@ -1,21 +1,22 @@
 import argparse
-import time
 import sys
+import asyncio
 
-def main():
+async def main():
     pomodoro_duration, break_duration = parse_arguments()
-    countdown(pomodoro_duration, 'Pomodoro')
-    countdown(break_duration, 'Break')
+    await countdown(pomodoro_duration, 'Pomodoro')
+    await countdown(break_duration, 'Break')
+    print("You did it!")
 
-def countdown(seconds, name):
+async def countdown(seconds, name):
     for remaining in range(seconds, 0, -1):
         print(f"\r{name} Time remaining: {remaining} seconds", end="", flush=True)
-        time.sleep(1)
+        await asyncio.sleep(1)
     sys.stdout.write("\r\033[K")  # \r = go to start, \033[K = clear to end of line
     sys.stdout.flush()
 
 def to_seconds(minutes):
-    return minutes * 60
+    return minutes * 3
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -31,4 +32,4 @@ def parse_arguments():
     return pomodoro_duration, break_duration
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
