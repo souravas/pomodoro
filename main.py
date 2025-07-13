@@ -11,33 +11,35 @@ Date: July 2025
 import argparse
 import asyncio
 import sys
-from typing import Tuple
 from rich.console import Console
 from rich.progress import Progress, BarColumn, TextColumn, TimeRemainingColumn
 
-console = Console()
+from Config import Config
 
-SECOND_MULTIPLIER = 60
-LONG_BREAK_DURATION = 15
-LONG_BREAK_POMODORO_COUNT = 4
+console = Console()
 
 
 async def main() -> None:
+    config = parse_arguments()
     console.print("[bold green]Started Pomodoro[/]")
-    await start_pomodoro(*parse_arguments())
+    await start_pomodoro(config)
     console.print("[bold green]Pomodoro Ended![/]")
 
 
-async def start_pomodoro(pomodoro_duration, break_duration):
+async def start_pomodoro(config: Config):
     count = 0
     while True:
-        await countdown(pomodoro_duration, "Pomodoro")
+        await countdown(config.pomodoro_duration, "Pomodoro", config)
         count += 1
         console.print(f"[bold green]Pomodoro's Done : {count}[/]")
-        await start_break(break_duration, count)
+        await start_break(config.break_duration, count, config)
         try:
-            pomodoro_duration = await fetch_user_input(pomodoro_duration, "Pomodoro")
-            break_duration = await fetch_user_input(break_duration, "Break")
+            config.pomodoro_duration = await fetch_user_input(
+                config.pomodoro_duration, "Pomodoro"
+            )
+            config.break_duration = await fetch_user_input(
+                config.break_duration, "Break"
+            )
         except ValueError:
             console.print("[red]Quitting Pomodoro...[/]")
             break
@@ -51,22 +53,24 @@ async def fetch_user_input(duration: int, name: str) -> int:
     return duration
 
 
-async def start_break(break_duration, count):
-    if is_long_break(count):
+async def start_break(break_duration, count, config: Config):
+    if is_long_break(count, config):
         console.print("[bold green]Taking Long Break![/]")
         await countdown(
-            LONG_BREAK_DURATION,
+            config.long_break_duration,
             "Break",
+            config,
         )
     else:
         await countdown(
             break_duration,
             "Break",
+            config,
         )
 
 
-async def countdown(minutes: int, name: str) -> None:
-    seconds = minutes * SECOND_MULTIPLIER
+async def countdown(minutes: int, name: str, config: Config) -> None:
+    seconds = minutes * config.second_multiplier
     with Progress(
         TextColumn("[bold blue]{task.fields[name]}", justify="right"),
         BarColumn(),
@@ -81,7 +85,7 @@ async def countdown(minutes: int, name: str) -> None:
             progress.update(task, advance=1)
 
 
-def parse_arguments() -> Tuple[int, int]:
+def parse_arguments() -> Config:
     parser = argparse.ArgumentParser(
         description="Pomodoro Timer - A beautiful command-line productivity tool",
         epilog="Example: python main.py -p 25 -b 5 (25 min work, 5 min break)",
@@ -110,16 +114,16 @@ def parse_arguments() -> Tuple[int, int]:
     )
     args = parser.parse_args()
     if args.test:
-        update_test_values()
-    return args.pomodoro_duration, args.break_duration
-
-
-def update_test_values():
-    global SECOND_MULTIPLIER
-    global LONG_BREAK_DURATION
-
-    SECOND_MULTIPLIER = 3
-    LONG_BREAK_DURATION = 3
+        return Config(
+            pomodoro_duration=args.pomodoro_duration,
+            break_duration=args.break_duration,
+            second_multiplier=3,
+            long_break_duration=3,
+        )
+    return Config(
+        pomodoro_duration=args.pomodoro_duration,
+        break_duration=args.break_duration,
+    )
 
 
 def ask(prompt: str, default: int) -> int:
@@ -129,8 +133,8 @@ def ask(prompt: str, default: int) -> int:
     return int(raw)
 
 
-def is_long_break(count):
-    return count > 0 and count % LONG_BREAK_POMODORO_COUNT == 0
+def is_long_break(count, config: Config):
+    return count > 0 and count % config.long_break_pomodoro_count == 0
 
 
 if __name__ == "__main__":
