@@ -80,11 +80,10 @@ async def countdown(minutes: int, name: str) -> None:
         console=console,
         transient=True,
     ) as progress:
-        task = progress.add_task("", name=name, total=seconds * 2 + 1)
-        # seconds * 2 + 1 -> handle edge case where 01 seconds wasn't showing
-        for _ in range(seconds + 1):
+        task = progress.add_task("", name=name, total=seconds - 1)
+        for _ in range(seconds):
             await asyncio.sleep(1)
-            progress.update(task, advance=2)
+            progress.update(task, advance=1)
 
 
 def parse_arguments() -> Config:
