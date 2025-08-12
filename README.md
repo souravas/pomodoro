@@ -1,4 +1,4 @@
-# Pomodoro Timer
+# Pomodoro Timer  
 
 A beautiful command-line Pomodoro timer built with Python and Rich library. This timer helps you implement the Pomodoro Technique for improved productivity and focus.
 
