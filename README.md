@@ -136,4 +136,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## Acknowledgments
 
 - Built with [Rich](https://github.com/Textualize/rich) for beautiful terminal output
-- Inspired by the Pomodoro Technique by Francesco Cirillo
